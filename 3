@@ -1,0 +1,155 @@
+import os  # Dosya kontrolü için gerekli
+
+# Dosya ismini burada tanımladım
+filename = "my_books.txt"
+
+def check_if_file_exists():
+    # Bu fonksiyon dosya var mı yok mu bakar
+    # Beginner seviyesinde hata almamak için önemlidir
+    if os.path.exists(filename):
+        return True
+    else:
+        return False
+
+def get_all_books():
+    book_list = []
+    
+    # Adım 1: Dosya var mı kontrol et
+    file_exists = check_if_file_exists()
+    
+    if file_exists == True:
+        # Dosyayı okuma modunda aç
+        f = open(filename, "r")
+        all_lines = f.readlines()
+        f.close()
+        
+        # Adım 2: Her satırı tek tek oku
+        for line in all_lines:
+            clean_line = line.strip() # Satır sonundaki boşlukları sil
+            
+            # Satırı virgülden böl
+            parts = clean_line.split(",")
+            
+            # Veri düzgün mü kontrol et (İsim ve Puan olmalı)
+            if len(parts) == 2:
+                book_name = parts[0]
+                book_rating_string = parts[1]
+                
+                # Puanın sayı olup olmadığını kontrol et
+                if book_rating_string.isdigit():
+                    book_rating = int(book_rating_string)
+                    
+                    # Sözlük oluştur ve listeye ekle
+                    temp_book = {}
+                    temp_book["title"] = book_name
+                    temp_book["rating"] = book_rating
+                    
+                    book_list.append(temp_book)
+    else:
+        # Dosya yoksa boş liste döndür
+        return []
+
+    return book_list
+
+def save_book_to_file(name, rating):
+    # Dosyayı ekleme (append) modunda aç
+    f = open(filename, "a")
+    
+    # Veriyi string'e çevirip yaz
+    line_to_write = name + "," + str(rating) + "\n"
+    f.write(line_to_write)
+    
+    f.close()
+    print("Success: Book has been saved.")
+
+def add_book_menu():
+    print("\n--- Add New Book ---")
+    name = input("Enter the Book Title: ")
+    
+    # Kullanıcının boş girmesini engelle
+    if len(name) > 0:
+        rating_input = input("Enter Rating (1-10): ")
+        
+        # 'try-except' yerine 'isdigit' kullanıyoruz
+        # Kullanıcının sadece sayı girip girmediğine bakar
+        if rating_input.isdigit():
+            rating_number = int(rating_input)
+            
+            # Sayı aralığını kontrol et
+            if rating_number >= 1 and rating_number <= 10:
+                save_book_to_file(name, rating_number)
+            else:
+                print("Error: Rating must be between 1 and 10.")
+        else:
+            print("Error: You did not enter a valid number.")
+    else:
+        print("Error: Book title cannot be empty.")
+
+def sort_and_show_books(my_library):
+    # Liste boş mu kontrol et
+    if len(my_library) == 0:
+        print("Your library is empty. Go add some books!")
+        return
+
+    # BUBBLE SORT ALGORİTMASI
+    # Kitapları puanına göre sıralıyoruz (Yüksekten Düşüğe)
+    length = len(my_library)
+    
+    for i in range(length):
+        for j in range(0, length - i - 1):
+            
+            # İki kitabı karşılaştır
+            book1 = my_library[j]
+            book2 = my_library[j + 1]
+            
+            # Eğer birincinin puanı ikinciden küçükse yer değiştir
+            if book1["rating"] < book2["rating"]:
+                temp = my_library[j]
+                my_library[j] = my_library[j + 1]
+                my_library[j + 1] = temp
+
+    # Sıralanmış listeyi ekrana bas
+    print("\n===============================")
+    print("      MY TOP RATED BOOKS       ")
+    print("===============================")
+    print("Book Title           | Rating")
+    print("---------------------| --------")
+    
+    for item in my_library:
+        t = item["title"]
+        r = item["rating"]
+        # Boşlukları ayarlayarak güzel gözükmesini sağla
+        print(f"{t:<20} | {r}")
+        
+    print("===============================")
+
+def main():
+    app_running = True
+    
+    print("Welcome to My Book Recommendation App")
+    
+    while app_running == True:
+        print("\nMAIN MENU")
+        print("1. Add a Book")
+        print("2. Show My Favorites (Sorted)")
+        print("3. Quit")
+        
+        user_choice = input("Select an option: ")
+        
+        if user_choice == "1":
+            add_book_menu()
+            
+        elif user_choice == "2":
+            # Verileri dosyadan tekrar çek
+            current_books = get_all_books()
+            sort_and_show_books(current_books)
+            
+        elif user_choice == "3":
+            print("Closing the application...")
+            app_running = False
+            
+        else:
+            print("Invalid selection. Please type 1, 2, or 3.")
+
+# Programı başlat
+main()
