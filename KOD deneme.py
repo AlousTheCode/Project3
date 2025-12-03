@@ -1,7 +1,7 @@
 import os
 # Matplotlib kütüphanesini içeri alıyoruz
-# Genelde 'plt' kısaltmasıyla kullanılır
-import matplotlib as plt
+
+import matplotlib.pyplot as plt 
 
 filename = "my_books.txt"
 
@@ -79,7 +79,7 @@ def show_graph_statistics(books):
     plt.figure(figsize=(8, 5)) # Pencere boyutu
     plt.bar(x_scores, y_counts, color='skyblue')
     
-    # Başlık ve etiketler (Hoca bunları sever)
+    # Başlık ve etiketler 3
     plt.title('My Book Ratings Distribution')
     plt.xlabel('Rating (1-10)')
     plt.ylabel('Number of Books')
@@ -158,7 +158,7 @@ def main():
             show_list_menu()
         elif sel == "3":
             data = get_all_books()
-            # Matplotlib fonksiyonunu çağırıyoruz
+            # Matplotlib fonctions calling 
             show_graph_statistics(data)
         elif sel == "4":
             print("Bye!")
