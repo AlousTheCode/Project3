@@ -1,4 +1,4 @@
 deneme,8
 laws,9
 exapmle,10
-5,2
+Laws and english,9
