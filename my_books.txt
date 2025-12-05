@@ -1,4 +1,4 @@
 deneme,8
 laws,9
-exapmle,10
 Laws and english,9
+english book,7

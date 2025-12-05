@@ -14,7 +14,7 @@ filename = "my_books.txt"
 
 # ---------------------------------------------------------------------------------------
 # --- 1. FILE HANDLING (Cited) ---
-# Reference: Python File Handling Documentation, utilizing 'with open()' for safe operation.
+# Reference: Python File Handling Documentation, utilizing  for safe operation.
 # ---------------------------------------------------------------------------------------
 
 def check_if_file_exists():
@@ -206,7 +206,7 @@ class LibraryApp:
             else:
                 messagebox.showerror("Error", "Rating must be between 1 and 10.")
         except ValueError:
-            # Error Handling: Catches non-integer input for rating.
+            # bi tek burda sıkıntı olariblir tekrar baks
             messagebox.showerror("Error", "Please enter a valid number for the rating.")
 
     def show_list_books_view(self):
@@ -403,7 +403,7 @@ class LibraryApp:
                     ax.text(bar.get_x() + bar.get_width()/2, yval + 0.1, int(yval), ha='center', va='bottom', fontsize=10)
             
             ax.set_title('Book Rating Distribution (Bar Chart)')
-            ax.set_xlabel('Rating (1-10)')
+            ax.set_xlabel('Rating (1-10)') # 1 den 10 a kadar gidiyor burası 9.5 olabilir 
             ax.set_ylabel('Number of Books')
             ax.set_xticks(x_scores)
             ax.grid(axis='y', linestyle='--', alpha=0.6)
