@@ -1,4 +1,20 @@
-deneme,8
-laws,9
-Laws and english,9
-english book,7
+Harry Potter and the Sorcerer's Stone,9
+The Lord of the Rings,10
+The Great Gatsby,7
+1984,8
+Pride and Prejudice,8
+The Catcher in the Rye,6
+The Hobbit,9
+Fahrenheit 451,8
+Moby Dick,5
+War and Peace,7
+Hamlet,9
+The Odyssey,6
+Crime and Punishment,9
+Alice in Wonderland,7
+The Alchemist,8
+Twilight,4
+Fifty Shades of Grey,3
+Clean Code,10
+Introduction to Algorithms,9
+Calculus for Beginners,2

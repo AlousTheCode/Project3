@@ -1,0 +1,406 @@
+import os
+import matplotlib.pyplot as plt
+# Module needed to embed Matplotlib plots into a Tkinter window
+# Reference: https://matplotlib.org/stable/api/backend_tkagg_api.html
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import tkinter as tk
+from tkinter import messagebox, ttk
+from functools import partial
+
+# --- LIBRARY AND FILE SETTINGS ---
+filename = "my_books.txt"
+
+# ---------------------------------------------------------------------------------------
+# --- 1. FILE HANDLING ---
+# Reference: Python Input and Output https://docs.python.org/3/tutorial/inputoutput.html
+# We import the necessary modules for the GUI (Tkinter), 
+# Data Visualization (Matplotlib), and file handling (OS)
+# ---------------------------------------------------------------------------------------
+
+def check_if_file_exists():
+    """Checks the existence of the data file."""
+    return os.path.exists(filename)
+
+def get_all_books():
+    """Reads all books from the file and returns them as a list of dictionaries."""
+    book_list = []
+    
+    if check_if_file_exists():
+        try:
+            with open(filename, "r") as f:
+                all_lines = f.readlines()
+        except IOError:
+            messagebox.showerror("File Error", "The book data file could not be read.")
+            return book_list
+
+        for line in all_lines:
+            clean_line = line.strip()
+            parts = clean_line.split(",", 1)
+            
+            if len(parts) == 2:
+                book_name = parts[0].strip()
+                rating_str = parts[1].strip()
+                
+                if rating_str.isdigit():
+                    book = {"title": book_name, "rating": int(rating_str)}
+                    book_list.append(book)
+    return book_list
+
+def rewrite_all_books(books):
+    """Rewrites the entire book list back to the file."""
+    try:
+        with open(filename, "w") as f:
+            for book in books:
+                line = book["title"] + "," + str(book["rating"]) + "\n"
+                f.write(line)
+    except IOError:
+        messagebox.showerror("File Error", "Failed to write data to the file.")
+
+def save_book_to_file(name, rating):
+    """Appends a new book entry to the file."""
+    line = name + "," + str(rating) + "\n"
+    try:
+        with open(filename, "a") as f:
+            f.write(line)
+        return True
+    except IOError:
+        messagebox.showerror("File Error", "Failed to save the book to the file.")
+        return False
+
+# ---------------------------------------------------------------------------------------
+# --- 2. CORE LOGIC (Search and Sort Algorithms) ---
+# Reference: Sorting HOW TO https://docs.python.org/3/howto/sorting.html
+# These functions manage reading from and writing to the text file.
+#  ---------------------------------------------------------------------------------------
+
+def linear_search_book(title_to_find, books):
+    """Linear Search Algorithm."""
+    for book in books:
+        if book['title'].lower() == title_to_find.lower(): 
+            return book
+    return None
+
+def check_duplicate_book(new_name):
+    """Check if book exists."""
+    current_books = get_all_books()
+    return linear_search_book(new_name, current_books) is not None
+
+def sort_books(books, sort_by='rating', ascending=False):
+    """Sorts books using Python's efficient Timsort."""
+    if sort_by == 'title':
+        return sorted(books, key=lambda book: book['title'].lower(), reverse=not ascending)
+    else:
+        return sorted(books, key=lambda book: book['rating'], reverse=not ascending)
+
+# ---------------------------------------------------------------------------------------
+#          --- 3. TKINTER GUI  ---
+# Reference: Tkinter Package Documentation https://docs.python.org/3/library/tkinter.html
+# We implement Linear Search and Sorting logic here
+# This section creates a user-friendly interface for the library management system.
+# ---------------------------------------------------------------------------------------
+
+class LibraryApp:
+    def __init__(self, master):
+        self.master = master
+        master.title("Advanced Library Management System")
+        master.geometry("1100x750")
+
+        # Main Layout
+        self.main_frame = tk.Frame(master)
+        self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        self.create_widgets()
+
+    # -------------------------------------------------------------------------
+    # STEP 5: CREATE WIDGETS (MENU & CONTENT)
+    # We set up the navigation buttons on the left and content area on the right.
+    # -------------------------------------------------------------------------
+    
+    def create_widgets(self):
+        """Creates the Menu Bar without ugly numbers."""
+        # Left Side: Navigation Menu
+        menu_frame = tk.Frame(self.main_frame, width=220, relief=tk.RAISED, borderwidth=2)
+        menu_frame.pack(side="left", fill="y", padx=5)
+
+        tk.Label(menu_frame, text="📖 MENU", font=('Arial', 16, 'bold')).pack(pady=15)
+        
+        # CLEAN BUTTONS (No Numbers)
+        ttk.Button(menu_frame, text="➕ Add New Book", command=self.show_add_book_view).pack(fill='x', pady=8, padx=10)
+        ttk.Button(menu_frame, text="📋 List & Sort Books", command=self.show_list_books_view).pack(fill='x', pady=8, padx=10)
+        ttk.Button(menu_frame, text="🔍 Search Book", command=self.show_search_view).pack(fill='x', pady=8, padx=10)
+        ttk.Button(menu_frame, text="🗑️ Delete Book", command=self.show_delete_view).pack(fill='x', pady=8, padx=10)
+        
+        tk.Label(menu_frame, text="📊 VISUALIZATIONS", font=('Arial', 12, 'bold')).pack(pady=15)
+        
+        ttk.Button(menu_frame, text="📈 Book Ratings (Bar)", command=self.show_bar_chart).pack(fill='x', pady=8, padx=10)
+        ttk.Button(menu_frame, text="🍰 Categories (Pie)", command=self.show_pie_chart).pack(fill='x', pady=8, padx=10)
+        
+        ttk.Button(menu_frame, text="🚪 EXIT", command=self.master.quit).pack(fill='x', pady=30, padx=10)
+
+        # Right Side: Content
+        self.content_frame = tk.Frame(self.main_frame)
+        self.content_frame.pack(side="right", fill="both", expand=True, padx=5)
+        
+        self.show_welcome_view()
+
+    def clear_content_frame(self):
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+    # --- GUI VIEWS ---
+    # -------------------------------------------------------------------------
+    # STEP 6: SCREEN VIEWS & LOGIC
+    # These functions define what happens when a menu button is clicked.
+    # -------------------------------------------------------------------------
+
+    def show_welcome_view(self):
+        self.clear_content_frame()
+        tk.Label(self.content_frame, text="📚 Welcome to Your Library! 📊", font=('Arial', 18)).pack(pady=50)
+        tk.Label(self.content_frame, text="Select an option from the menu to begin.", font=('Arial', 12)).pack(pady=10)
+
+    def show_add_book_view(self):
+        self.clear_content_frame()
+        tk.Label(self.content_frame, text="Add New Book", font=('Arial', 14, 'bold')).pack(pady=20)
+        
+        tk.Label(self.content_frame, text="Book Title:").pack(pady=5)
+        self.book_title_entry = tk.Entry(self.content_frame, width=50)
+        self.book_title_entry.pack(pady=5)
+        
+        tk.Label(self.content_frame, text="Rating (1-10):").pack(pady=5)
+        self.book_rating_entry = tk.Entry(self.content_frame, width=10)
+        self.book_rating_entry.pack(pady=5)
+        
+        ttk.Button(self.content_frame, text="Save Book", command=self.handle_add_book).pack(pady=20)
+
+    def handle_add_book(self):
+        name = self.book_title_entry.get().strip()
+        rating_input = self.book_rating_entry.get().strip()
+
+        if len(name) == 0:
+            messagebox.showerror("Error", "Book title cannot be empty.")
+            return
+
+        if check_duplicate_book(name):
+            messagebox.showerror("Error", f"'{name}' already exists.")
+            return
+
+        try:
+            rating = int(rating_input)
+            if 1 <= rating <= 10:
+                if save_book_to_file(name, rating):
+                    self.book_title_entry.delete(0, tk.END)
+                    self.book_rating_entry.delete(0, tk.END)
+                    messagebox.showinfo("Success", f"'{name}' saved.")
+            else:
+                messagebox.showerror("Invalid Input", "Rating must be between 1 and 10.")
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter a valid number.")
+
+    def show_list_books_view(self):
+        self.clear_content_frame()
+        tk.Label(self.content_frame, text="Library Collection", font=('Arial', 14, 'bold')).pack(pady=10)
+        
+        books = get_all_books()
+        if not books:
+            tk.Label(self.content_frame, text="Library is empty.").pack(pady=20)
+            return
+
+        sort_frame = tk.Frame(self.content_frame)
+        sort_frame.pack(pady=10)
+        
+        tk.Label(sort_frame, text="Sort By:").pack(side='left', padx=5)
+        sort_variable = tk.StringVar(self.content_frame, "1")
+        
+        def update_list(val):
+            choice = sort_variable.get()
+            if choice == "1":
+                sorted_books = sort_books(books, 'rating', ascending=False)
+            elif choice == "2":
+                sorted_books = sort_books(books, 'rating', ascending=True)
+            elif choice == "3":
+                sorted_books = sort_books(books, 'title', ascending=True)
+            
+            self.book_tree.delete(*self.book_tree.get_children())
+            for i, book in enumerate(sorted_books):
+                self.book_tree.insert("", tk.END, values=(i + 1, book['title'], book['rating']))
+
+        tk.Radiobutton(sort_frame, text="Rating (High-Low)", variable=sort_variable, value="1", command=lambda: update_list(None)).pack(side='left')
+        tk.Radiobutton(sort_frame, text="Rating (Low-High)", variable=sort_variable, value="2", command=lambda: update_list(None)).pack(side='left')
+        tk.Radiobutton(sort_frame, text="Title (A-Z)", variable=sort_variable, value="3", command=lambda: update_list(None)).pack(side='left')
+
+        self.book_tree = ttk.Treeview(self.content_frame, columns=("No", "Title", "Rating"), show='headings')
+        self.book_tree.heading("No", text="No.")
+        self.book_tree.heading("Title", text="Book Title")
+        self.book_tree.heading("Rating", text="Rating")
+        
+        self.book_tree.column("No", width=50, anchor='center')
+        self.book_tree.column("Title", width=400, anchor='w')
+        self.book_tree.column("Rating", width=100, anchor='center')
+        
+        self.book_tree.pack(fill='both', expand=True, padx=10, pady=10)
+        update_list(None)
+
+    def show_search_view(self):
+        self.clear_content_frame()
+        tk.Label(self.content_frame, text="Search Book", font=('Arial', 14, 'bold')).pack(pady=20)
+        
+        tk.Label(self.content_frame, text="Enter Book Title:").pack(pady=5)
+        self.search_entry = tk.Entry(self.content_frame, width=50)
+        self.search_entry.pack(pady=5)
+        
+        ttk.Button(self.content_frame, text="Search", command=self.handle_search).pack(pady=10)
+        
+        self.search_result_label = tk.Label(self.content_frame, text="", font=('Arial', 12))
+        self.search_result_label.pack(pady=20)
+        
+    def handle_search(self):
+        title = self.search_entry.get().strip()
+        books = get_all_books()
+        
+        if not books:
+            self.search_result_label.config(text="Library is empty.")
+            return
+        if not title:
+            self.search_result_label.config(text="Please enter a title.")
+            return
+            
+        found_book = linear_search_book(title, books)
+        
+        if found_book:
+            self.search_result_label.config(text=f"✅ Found: '{found_book['title']}' - Rating: {found_book['rating']}/10", fg="green")
+        else:
+            self.search_result_label.config(text=f"❌ '{title}' not found.", fg="red")
+
+    def show_delete_view(self):
+        self.clear_content_frame()
+        tk.Label(self.content_frame, text="Delete Book", font=('Arial', 14, 'bold')).pack(pady=10)
+        
+        books = get_all_books()
+        if not books:
+            tk.Label(self.content_frame, text="No books to delete.").pack(pady=20)
+            return
+
+        tk.Label(self.content_frame, text="Select Book:").pack(pady=5)
+        
+        book_options = [f"{i+1}. {book['title']} ({book['rating']}/10)" for i, book in enumerate(books)]
+        self.book_to_delete_var = tk.StringVar(self.content_frame)
+        self.book_to_delete_var.set(book_options[0] if book_options else "")
+        
+        self.book_combobox = ttk.Combobox(self.content_frame, textvariable=self.book_to_delete_var, values=book_options, width=70)
+        self.book_combobox.pack(pady=5)
+        
+        ttk.Button(self.content_frame, text="Delete Selected", command=partial(self.handle_delete_book, books)).pack(pady=20)
+
+    def handle_delete_book(self, books):
+        selected = self.book_to_delete_var.get()
+        if not selected: return
+
+        try:
+            idx = int(selected.split('.')[0]) - 1
+            if 0 <= idx < len(books):
+                confirm = messagebox.askyesno("Confirm", f"Delete '{books[idx]['title']}'?")
+                if confirm:
+                    books.pop(idx)
+                    rewrite_all_books(books)
+                    messagebox.showinfo("Deleted", "Book deleted successfully.")
+                    self.show_delete_view()
+        except ValueError:
+            messagebox.showerror("Error", "Invalid selection.")
+
+    # --- VISUALIZATIONS ---
+    # -------------------------------------------------------------------------
+    # STEP 7: DATA VISUALIZATION
+    # These functions use Matplotlib to draw Bar and Pie charts.
+    # -------------------------------------------------------------------------
+
+    def plot_graph(self, plot_func):
+        self.clear_content_frame()
+        books = get_all_books()
+        
+        if not books:
+            messagebox.showinfo("Info", "No data available for graphs.")
+            return
+
+        fig = plt.Figure(figsize=(8, 6), dpi=100)
+        ax = fig.add_subplot(111)
+        
+        plot_func(books, ax) 
+
+        canvas = FigureCanvasTkAgg(fig, master=self.content_frame)
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+        toolbar = NavigationToolbar2Tk(canvas, self.content_frame)
+        toolbar.update()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        canvas.draw()
+
+    def show_bar_chart(self):
+        """
+        UPDATED GRAPH: Dynamic Colors and Average Line.
+        """
+        def plot_bar(books, ax):
+            names = [book['title'] for book in books]
+            ratings = [book['rating'] for book in books]
+            
+            if not ratings: return
+
+            # 1. Dynamic Colors
+            bar_colors = []
+            for r in ratings:
+                if r >= 8: bar_colors.append('#2ecc71') # Green
+                elif r >= 5: bar_colors.append('#f39c12') # Orange
+                else: bar_colors.append('#e74c3c') # Red
+
+            bars = ax.bar(names, ratings, color=bar_colors, alpha=0.8, edgecolor='black')
+            
+            # 2. Average Line
+            avg = sum(ratings) / len(ratings)
+            ax.axhline(y=avg, color='blue', linestyle='--', linewidth=2, label=f'Average: {avg:.1f}')
+            
+            ax.set_title(f'Book Ratings Analysis (Avg: {avg:.1f})', fontsize=14, fontweight='bold')
+            ax.set_xlabel('Book Titles', fontsize=12)
+            ax.set_ylabel('Rating (1-10)', fontsize=12)
+            ax.legend(loc='upper right')
+            
+            ax.set_xticklabels(names, rotation=45, ha='right')
+            ax.set_ylim(0, 11)
+            ax.set_yticks(range(1, 11))
+            
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                        f'{int(height)}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+
+            ax.grid(axis='y', linestyle=':', alpha=0.5)
+            fig = ax.figure
+            fig.tight_layout()
+
+        self.plot_graph(plot_bar)
+        
+    def show_pie_chart(self):
+        def plot_pie(books, ax):
+            low = sum(1 for b in books if b["rating"] <= 5)
+            mid = sum(1 for b in books if 6 <= b["rating"] <= 8)
+            high = sum(1 for b in books if b["rating"] >= 9)
+
+            sizes = [low, mid, high]
+            labels = ['Low (1-5)', 'Mid (6-8)', 'High (9-10)']
+            colors = ['#e74c3c', '#f39c12', '#2ecc71']
+            
+            data = [(s, l, c) for s, l, c in zip(sizes, labels, colors) if s > 0]
+            if not data:
+                 ax.text(0.5, 0.5, "Insufficient data.", ha='center')
+                 return
+
+            final_sizes, final_labels, final_colors = zip(*data)
+
+            ax.pie(final_sizes, labels=final_labels, colors=final_colors,
+                   autopct='%1.1f%%', startangle=90)
+            ax.set_title('Rating Categories')
+            
+        self.plot_graph(plot_pie)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = LibraryApp(root)
+    root.mainloop()
