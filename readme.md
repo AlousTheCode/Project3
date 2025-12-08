@@ -1,12 +1,12 @@
 GitHub Repository
-The source code for this project is available on GitHub: [BURAYA GITHUB LINKINI YAPIŞTIR]
+The source code for this project is available on GitHub: https://github.com/AlousTheCode/Project3
 
 Identification
-Name: [ADIN SOYADIN]
+Name: Muhammed Selim Ateş
 
-P-number: [ÖĞRENCİ NUMARAN]
+P-number: [P483863]
 
-Course code: [DERS KODU]
+Course code: [499]
 
 Declaration of Own Work
 I confirm that this assignment is my own work. Where I have referred to academic sources, I have provided in-text citations and included the sources in the final reference list.
@@ -68,7 +68,7 @@ Matplotlib: For plotting statistical graphs (Bar and Pie charts).
 OS: For file existence checks and path management.
 
 Project Structure
-library_app_gui.py: The main source code containing the GUI, logic, and algorithms.
+Library Management System.py : The main source code containing the GUI, logic, and algorithms.
 
 my_books.txt: The text file used as a database to store book titles and ratings.
 
